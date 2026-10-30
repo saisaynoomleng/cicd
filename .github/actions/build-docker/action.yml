@@ -3,13 +3,18 @@ description: Build docker image
 
 inputs:
   image-name:
-    description: container name to build from docker image
+    description: docker image name
     required: false
     default: cicd
+
+  image-tag:
+    description: docker image tag
+    required: false
+    default: latest
 
 runs:
   using: composite
   steps:
     - name: Build image
       shell: bash
-      run: docker build -t ${{ inputs.image-name }} .
+      run: docker build -t "${{ inputs.image-name }}:${{ inputs.image-tag }}" .
