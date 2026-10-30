@@ -1,0 +1,15 @@
+name: Build Docker Image
+description: Build docker image
+
+inputs:
+  image-name:
+    description: container name to build from docker image
+    required: false
+    default: cicd
+
+runs:
+  using: composite
+  steps:
+    - name: Build image
+      shell: bash
+      run: docker build -t ${{ inputs.image-name }} .
