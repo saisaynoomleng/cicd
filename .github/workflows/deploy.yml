@@ -20,6 +20,22 @@ jobs:
           image-tag: latest
 
       - name: PUSH image to ECR
+        uses: ./.github/actions/deploy-ec2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+          ecr-uri: ${{ vars.ECR_URI }}
+          image-name: ${{ vars.IMAGE_NAME }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy to EC2
         uses: ./.github/actions/push-ecr
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
