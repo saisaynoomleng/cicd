@@ -54,3 +54,4 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
           ecr-uri: ${{ vars.ECR_URI }}
           image-name: ${{ vars.IMAGE_NAME }}
+          ec2-instance-id: ${{ secrets.EC2_ID }}
