@@ -1,0 +1,55 @@
+name: Push ECR
+description: Push docker image to AWS ECR
+
+inputs:
+  inputs:
+    aws-access-key-id:
+      description: AWS IAM user access key ID
+      required: true
+
+    aws-secret-access-key:
+      description: AWS IAM user secret access key
+      required: true
+
+    aws-region:
+      description: AWS ECR region
+      required: false
+      default: us-east-2
+
+    ecr-uri:
+      description: AWS ECR Registry URI
+      required: true
+
+    image-name:
+      description: Docker image name
+      required: false
+      default: cicd:latest
+
+    image-tag:
+      description: Docker image tag
+      required: false
+      default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: AWS login
+      shell: bash
+      run: aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${{ inputs.ecr-uri }}
+
+    - name: Tag image
+      shell: bash
+      run: |
+        docker tag ${{ inputs.image-name}}:${{ inputs.image-tag}} \
+        ${{ inputs.ecr-uri }}/${{ inputs.image-name }}:${{ inputs.image-tag}}
+
+    - name: Push image
+      shell: bash
+      run: docker push ${{ inputs.ecr-uri }}/${{ inputs.image-name }}:${{inputs.image-tag}}
