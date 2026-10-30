@@ -2,33 +2,32 @@ name: Push ECR
 description: Push docker image to AWS ECR
 
 inputs:
-  inputs:
-    aws-access-key-id:
-      description: AWS IAM user access key ID
-      required: true
+  aws-access-key-id:
+    description: AWS IAM user access key ID
+    required: true
 
-    aws-secret-access-key:
-      description: AWS IAM user secret access key
-      required: true
+  aws-secret-access-key:
+    description: AWS IAM user secret access key
+    required: true
 
-    aws-region:
-      description: AWS ECR region
-      required: false
-      default: us-east-2
+  aws-region:
+    description: AWS ECR region
+    required: false
+    default: us-east-2
 
-    ecr-uri:
-      description: AWS ECR Registry URI
-      required: true
+  ecr-uri:
+    description: AWS ECR Registry URI
+    required: true
 
-    image-name:
-      description: Docker image name
-      required: false
-      default: cicd:latest
+  image-name:
+    description: Docker image name
+    required: false
+    default: cicd:latest
 
-    image-tag:
-      description: Docker image tag
-      required: false
-      default: latest
+  image-tag:
+    description: Docker image tag
+    required: false
+    default: latest
 
 runs:
   using: composite

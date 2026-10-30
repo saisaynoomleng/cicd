@@ -1,0 +1,7 @@
+name: Deploy EC2
+description: Pull image from AWS EC2 and run a container
+
+inputs:
+  aws-access-key-id:
+    description: AWS IAM user access key ID
+    required: true
