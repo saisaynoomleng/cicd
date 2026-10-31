@@ -48,69 +48,17 @@ runs:
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ${{ inputs.aws-region }}
 
-    - name: Deploy on EC2
+    - name: AWS login
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.AWS_REGION }}
+
+    - name: Send AWS SSM Command
       shell: bash
-      env:
-        AWS_REGION: ${{ inputs.aws-region }}
-        EC2_INSTANCE_ID: ${{ inputs.ec2-instance-id }}
-        ECR_URI: ${{ inputs.ecr-uri }}
-        IMAGE_NAME: ${{ inputs.image-name }}
-        IMAGE_TAG: ${{ inputs.image-tag }}
-        CONTAINER_NAME: ${{ inputs.container-name }}
-
       run: |
-        set -euo pipefail
-
-        ECR_REGISTRY="${ECR_URI%%/*}"
-        IMAGE_URI="${ECR_URI}/${IMAGE_NAME}:${IMAGE_TAG}"
-
-        COMMANDS=$(jq -cn \
-          --arg region "$AWS_REGION" \
-          --arg registry "$ECR_REGISTRY" \
-          --arg image "$IMAGE_URI" \
-          --arg container "$CONTAINER_NAME" \
-          '{
-            commands: [
-              "aws ecr get-login-password --region " + $region + " | docker login --username AWS --password-stdin " + $registry,
-              "docker pull " + $image,
-              "docker stop " + $container + " || true",
-              "docker rm " + $container + " || true",
-              "docker run -d --name " + $container + " --restart unless-stopped -p 3000:3000 " + $image
-            ]
-          }')
-
-        COMMAND_ID=$(aws ssm send-command \
-          --region "$AWS_REGION" \
-          --instance-ids "$EC2_INSTANCE_ID" \
-          --document-name "AWS-RunShellScript" \
-          --parameters "$COMMANDS" \
-          --query "Command.CommandId" \
-          --output text)
-
-        echo "SSM Command ID: $COMMAND_ID"
-
-        if ! aws ssm wait command-executed \
-          --region "$AWS_REGION" \
-          --command-id "$COMMAND_ID" \
-          --instance-id "$EC2_INSTANCE_ID"; then
-          echo "SSM command execution failed or timed out."
-        fi
-
-        aws ssm get-command-invocation \
-          --region "$AWS_REGION" \
-          --command-id "$COMMAND_ID" \
-          --instance-id "$EC2_INSTANCE_ID"
-
-        STATUS=$(aws ssm get-command-invocation \
-          --region "$AWS_REGION" \
-          --command-id "$COMMAND_ID" \
-          --instance-id "$EC2_INSTANCE_ID" \
-          --query "Status" \
-          --output text)
-
-        if [ "$STATUS" != "Success" ]; then
-          echo "Deployment failed. Status: $STATUS"
-          exit 1
-        fi
-
-        echo "Deployment successful!"
+        aws ssm send-command \
+        --region ${{ inputs.aws-region }} \
+        --instance-ids ${{ inputs.aws-ec2-instance-id }}
+        --document-name "AWS-RunShellScript" \
