@@ -57,6 +57,12 @@ runs:
 
     - name: Send AWS SSM Command
       shell: bash
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+        EC2_INSTANCE_ID: ${{ inputs.ec2-instance-id }}
+        ECR_REGISTRY: ${{ inputs.ecr-registry }}
+        ECR_REPO: ${{ inputs.ecr-repo }}
+        CONTAINER_NAME: ${{ inputs.container-name }}
       run: |
         COMMAND_ID=$(aws ssm send-command \
            --region "$AWS_REGION" \
